@@ -1,22 +1,30 @@
 import { type Response } from "express";
+import { HttpCode } from "./status.js";
 
-export function ok(res: Response, data: any = null) {
-    return res.status(200).json({
+export function ok<T>(
+    res: Response, 
+    data: T,
+    message: string = "Success"
+) {
+    return res.status(HttpCode.OK).json({
         success: true,
+        message,
         data
     });
 }
 
-export function created(res: Response, data: any) {
-    return res.status(201).json({
+export function created<T>(
+    res: Response, 
+    data: T,
+    message: string = "Resource created successfully"
+) {
+    return res.status(HttpCode.CREATED).json({
         success: true,
+        message,
         data
     });
 }
 
-export function fail(res: Response, message: string, statusCode: number = 400) {
-    return res.status(statusCode).json({
-        success: false,
-        message
-    });
+export function noContent(res: Response) {
+    return res.status(HttpCode.NO_CONTENT).send();
 }
