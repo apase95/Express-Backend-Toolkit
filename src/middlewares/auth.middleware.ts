@@ -56,7 +56,7 @@ export const checkOwnerOrAdmin = (
     return asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
         if (!req.user) throw new AuthError("Not authenticated", 401);
 
-        if (req.user.role === "admin") return next();
+        if (req.user.role === UserRole.ADMIN) return next();
         
         const resourceId = req.params.id;
 
@@ -69,5 +69,7 @@ export const checkOwnerOrAdmin = (
         const ownerId = resource.get(ownerField)?.toString();
         const userId = req.user._id.toString();
         if (ownerId !== userId) throw new AppError("You are not the owner of this resource", 403);
+        
+        next();
     })
 };
