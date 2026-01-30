@@ -10,6 +10,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": [],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,

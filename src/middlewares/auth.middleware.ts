@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { asyncHandler } from "./asyncHandler.js";
+import { asyncHandler } from "./async-handler.middleware.js";
 import { AuthError } from "../errors/AuthError.js";
 import { verifyToken } from "../security/jwt.js";
-import User from "../models/User.js";
 import { AppError } from "../errors/AppError.js";
 import mongoose from "mongoose";
+import User, { UserRole } from "../models/user.model.js";
 
 
 export const authenticate = asyncHandler(async(
@@ -25,7 +25,7 @@ export const authenticate = asyncHandler(async(
     }
 
     const decoded = verifyToken(token) as { userId: string, role: string };
-    const currentUser = await User.findById(decoded.userId).select("-password");
+    const currentUser = await User.findById(decoded.userId).select("+role");
     if (!currentUser) {
         throw new AuthError("The user belonging to this token does no longer exist.")
     }
@@ -34,10 +34,16 @@ export const authenticate = asyncHandler(async(
     next();
 });
 
-export const authorize = (...roles: string[]) => {
+export const authorize = (...roles: UserRole[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        if (!req.user || !roles.includes(req.user.role)) {
-            return next(new AuthError("You do not have permission to perform this action", 403));
+        if (!req.user) {
+            return next(new AuthError("Not authenticated", 401));
+        }
+
+        if (!roles.includes(req.user.role)) {
+            return next(
+                new AuthError("You do not have permission to perform this action", 403)
+            );
         }
         next();
     };
@@ -48,10 +54,11 @@ export const checkOwnerOrAdmin = (
     ownerField: string = "author"
 ) => {
     return asyncHandler(async(req: Request, res: Response, next: NextFunction) => {
+        if (!req.user) throw new AuthError("Not authenticated", 401);
+
         if (req.user.role === "admin") return next();
         
         const resourceId = req.params.id;
-        if (!resourceId) throw new AppError("No resource ID provider", 400);
 
         const ModelSchema = mongoose.model(modelName);
         if (!ModelSchema) throw new AppError(`Model ${modelName} is not registered`, 500);
@@ -59,7 +66,7 @@ export const checkOwnerOrAdmin = (
         const resource = await ModelSchema.findById(resourceId);
         if (!resource) throw new AppError(`${modelName} is not registered`, 404);
 
-        const ownerId = resource[ownerField]?.toString();
+        const ownerId = resource.get(ownerField)?.toString();
         const userId = req.user._id.toString();
         if (ownerId !== userId) throw new AppError("You are not the owner of this resource", 403);
     })

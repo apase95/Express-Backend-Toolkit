@@ -1,30 +1,28 @@
-import { Request, Response } from "express";
-import { asyncHandler } from "../middlewares/asyncHandler.js";
+import { Request, RequestHandler, Response } from "express";
+import { asyncHandler } from "../middlewares/async-handler.middleware.js";
 import { getPaginationParams, getPagingData } from "../http/pagination.js";
 import { created, ok } from "../http/response.js";
-import User from "../models/User.js";
+import { userService } from "../services/user.service.js";
 
-export const getUsers = asyncHandler(async (
+
+export const getUsers: RequestHandler = asyncHandler(async(
     req: Request, 
     res: Response
 ) => {
   
     const { page, limit, skip } = getPaginationParams(req.query);
-    const [users, total] = await Promise.all([
-        User.find().skip(skip).limit(limit),
-        User.countDocuments()
-    ]);
+    const { users, total } = await userService.getUsers(skip, limit);
 
     const responseData = getPagingData(users, total, page, limit);
     return ok(res, responseData);
 });
 
-export const createUser = asyncHandler(async (
+export const createUser: RequestHandler = asyncHandler(async (
     req: Request, 
     res: Response
 ) => {
     
-    const newUser = await User.create(req.body);
+    const newUser = await userService.createUser(req.body);
     return created(res, newUser, "User registered successfully");
 });
 
