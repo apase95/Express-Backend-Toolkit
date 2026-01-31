@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  api:
+    container_name: express_toolkit_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGO_URL=mongodb://mongo:27017/express-toolkit
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    restart: always
+    networks:
+      - app_network
+
+  mongo:
+    image: mongo:6.0
+    container_name: express_toolkit_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app_network
+
+volumes:
+  mongo_data:
+
+networks:
+  app_network:
+    driver: bridge
