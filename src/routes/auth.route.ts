@@ -12,14 +12,17 @@ import {
 import { authenticate } from "../middlewares/auth.middleware.js";
 import { rateLimiter } from "../middlewares/rate-limit.middleware.js";
 import { config } from "../config/index.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import { loginSchema, registerSchema } from "../validations/auth.validation.js";
 
 
 const router = Router();
 
 router.use(rateLimiter({ windowMs: 15 * 60 * 1000, max: 20 }));
 
-router.post("/register", register);
-router.post("/login", login);
+
+router.post("/register", validate(registerSchema), register);
+router.post("/login", validate(loginSchema), login);
 router.post("/logout", logout);
 router.post("/refresh-token", refreshToken);
 
