@@ -21,8 +21,12 @@ export const updateUserProfile: RequestHandler = asyncHandler(async(
 ) => {
     
     const userId = req.user!._id.toString();
+    const body = req.body;
+    if (req.file) {
+        body.avatarURL = req.file.path;
+    }; 
+
     const updatedUser = await userService.updateUserProfile(userId, req.body);
-    
     return ok(res, updatedUser, "Profile updated successfully");
 });
 
