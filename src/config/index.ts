@@ -44,5 +44,10 @@ export const config = {
             clientSecret: getEnv("GOOGLE_CLIENT_SECRET"),
             callbackUrl: getEnv("GOOGLE_CALLBACK_URL", "/auth/google/callback"),
         },
+        linkedin: {
+            clientId: getEnv("LINKEDIN_CLIENT_ID"),
+            clientSecret: getEnv("LINKEDIN_CLIENT_SECRET"),
+            callbackUrl: getEnv("LINKEDIN_CALLBACK_URL", "/api/auth/linkedin/callback"),
+        }
     }
 } as const;

@@ -6,6 +6,7 @@ import { errorHandler } from './errors/errorHandler.js';
 import { config } from './config/index.js';
 import { connectDB } from './database/mongo.js';
 import userRoute from './routes/user.route.js';
+import authRoute from './routes/auth.route.js';
 
 
 dotenv.config();
@@ -26,6 +27,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/api/users', userRoute);
+app.use('/api/auth', authRoute);
 
 app.use(errorHandler);
 

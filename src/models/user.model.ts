@@ -44,7 +44,10 @@ const userSchema = new Schema({
         type: String, 
         index: true 
     },
-    linkedinId: String,
+    linkedinId: {
+        type: String,
+        index: true
+    },
     role: {
         type: String,
         enum: Object.values(UserRole),
@@ -82,7 +85,8 @@ export interface IUserCreateInput {
     lastName?: string;
     phoneNumber?: string;
     avatarURL?: string;
-    googleId?: string;
+    googleId?: string | undefined;
+    linkedinId?: string | undefined;
     role?: UserRole;
 }
 

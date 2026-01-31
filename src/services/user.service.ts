@@ -1,4 +1,3 @@
-import { updateUserProfile, changePhone } from './../controllers/user.controller';
 import User, { IUserCreateInput } from "../models/user.model.js";
 import { AppError } from '../errors/AppError.js';
 
