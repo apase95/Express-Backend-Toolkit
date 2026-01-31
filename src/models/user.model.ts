@@ -42,11 +42,13 @@ const userSchema = new Schema({
     avatarId: String,
     googleId: { 
         type: String, 
-        index: true 
+        index: true,
+        default: null
     },
     linkedinId: {
         type: String,
-        index: true
+        index: true,
+        default: null
     },
     role: {
         type: String,
@@ -85,8 +87,8 @@ export interface IUserCreateInput {
     lastName?: string;
     phoneNumber?: string;
     avatarURL?: string;
-    googleId?: string | undefined;
-    linkedinId?: string | undefined;
+    googleId?: string;
+    linkedinId?: string;
     role?: UserRole;
 }
 

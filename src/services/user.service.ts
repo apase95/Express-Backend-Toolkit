@@ -1,5 +1,6 @@
 import User, { IUserCreateInput } from "../models/user.model.js";
 import { AppError } from '../errors/AppError.js';
+import { userRepository } from "../repositories/user.repository.js";
 
 
 interface IUpdateProfileInput {
@@ -16,32 +17,22 @@ interface IChangePasswordInput {
 
 class UserService {
     async getUsers(skip: number, limit: number) {
-        const [users, total] = await Promise.all([
-            User.find().skip(skip).limit(limit),
-            User.countDocuments()
-        ]);
+        const [users, total] = await userRepository.getUsers(skip, limit);
         return { users, total };
     };
 
     async createUser(data: IUserCreateInput) {
-        return User.create(data);
+        return userRepository.createUser(data);
     };
 
     async updateUserProfile(userId: string, data: IUpdateProfileInput) {
-        const updateData = {
-            displayName: data.displayName,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            avatarURL: data.avatarURL,
-        };
-
-        const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
-        if (!updatedUser) throw new AppError("User not found", 404);
-        return updatedUser;
+        const updated = await userRepository.updateById(userId, data);
+        if (!updated) throw new AppError("User not found", 404);
+        return updated;
     };
 
     async changePhone(userId: string, newPhone: string) {
-        const user = await User.findById(userId);
+        const user = await userRepository.findById(userId);
         if (!user) throw new AppError("User not found", 404);
 
         if (!user.googleId || !user.linkedinId) {
@@ -54,14 +45,14 @@ class UserService {
     };
 
     async changePassword(userId: string, data: IChangePasswordInput) {
-        const { oldPassword, newPassword } = data;
-        const user = await User.findById(userId).select("+hashedPassword");
+        const user = await userRepository.findByIdWithPassword(userId);
         if (!user) throw new AppError("User not found", 404);
-
+        
         if (!user.googleId || !user.linkedinId) {
             throw new AppError("Social accounts cannot change phone number directly", 400);
         }
         
+        const { oldPassword, newPassword } = data;
         if (!oldPassword) throw new AppError("Old password is required", 400);
 
         const isMatch = await user.checkPassword(oldPassword);

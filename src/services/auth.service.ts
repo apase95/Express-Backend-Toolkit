@@ -4,6 +4,7 @@ import { Profile as LinkedInProfile } from "passport-linkedin-oauth2";
 import { nanoid } from "../utils/nanoid.js";
 import { AppError } from "../errors/AppError.js";
 import { signAccessToken, signRefreshToken, verifyToken } from "../security/jwt.js";
+import { authRepository } from "../repositories/auth.repository.js";
 
 
 interface NormalizedProfile {
@@ -13,13 +14,13 @@ interface NormalizedProfile {
     firstName: string;
     lastName: string;
     avatarUrl: string;
-}
+};
 
 class AuthService {
 
     async login(data: Pick<IUserCreateInput, "email" | "password">){
         const { email, password } = data;
-        const user = await User.findOne({ email }).select("+hashedPassword");
+        const user = await authRepository.findByEmailWithPassword(email);
         if (!user || !password) throw new AppError("Invalid email or password", 401);
 
         const isValid = await user.checkPassword(password);
@@ -32,7 +33,7 @@ class AuthService {
     async refreshToken(token: string){
         const decoded = verifyToken(token, true);
         
-        const user = await User.findById(decoded.userId);
+        const user = await authRepository.findById(decoded.userId);
         if (!user) throw new AppError("User not found", 404);
 
         return await this.generateTokens(user); 
@@ -48,7 +49,7 @@ class AuthService {
     };
 
     async register(data: IUserCreateInput) {
-        const existingUser = await User.findOne({ email: data.email });
+        const existingUser = await authRepository.findByEmail(data.email);
         if (existingUser) throw new AppError("Email already exists", 409);
 
         const newUser = await User.create(data as any);
@@ -65,7 +66,7 @@ class AuthService {
             throw new AppError(`${provider} account does not have an email`, 400);
         }
 
-        let user = await User.findOne({ email: data.email });
+        let user = await authRepository.findByEmail(data.email);
         if (user) {
             if (provider === "google" && !user.googleId) {
                 user.googleId = data.providerId;
@@ -88,13 +89,13 @@ class AuthService {
             avatarURL: data.avatarUrl,
             password: randomPassword,
             role: UserRole.USER,
-            googleId: provider === "google" ? data.providerId : undefined,
-            linkedinId: provider === "linkedin" ? data.providerId : undefined,
         };
-
+        if (provider === "google") payload.googleId = data.providerId;
+        if (provider === "linkedin") payload.linkedinId = data.providerId;
+        
         const newUser = await User.create(payload as any);
         return newUser;
-    }
+    };
 
     async findOrCreateGoogleUser(profile: GoogleProfile): Promise<IUser> {
         const normalizedData: NormalizedProfile = {
