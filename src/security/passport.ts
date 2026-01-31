@@ -1,6 +1,6 @@
 import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20"; 
 import { Strategy as LinkedInStrategy, Profile as LinkedInProfile } from "passport-linkedin-oauth2";
-import { config } from "../config/index.js";
+import { config } from "../config/index.config.js";
 import { authService } from "../services/auth.service.js";
 import { logger } from "../logger/logger.js";
 import passport from "passport";

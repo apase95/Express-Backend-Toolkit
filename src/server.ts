@@ -1,12 +1,11 @@
-import express, { Express, Request, Response } from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import { errorHandler } from './errors/errorHandler.js';
-import { config } from './config/index.js';
-import { connectDB } from './database/mongo.js';
-import userRoute from './routes/user.route.js';
-import authRoute from './routes/auth.route.js';
+import express, { Express, Request, Response } from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import { errorHandler } from "./errors/errorHandler.js";
+import { config } from "./config/index.config.js";
+import { connectDB } from "./database/mongo.js";
+import routes from "./routes/index.route.js"; 
 
 
 dotenv.config();
@@ -22,12 +21,11 @@ app.use(cookieParser());
 
 connectDB(); 
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('API is running...');
+app.get("/", (req: Request, res: Response) => {
+    res.send("API is running...");
 });
 
-app.use('/api/users', userRoute);
-app.use('/api/auth', authRoute);
+app.use("/api/v1", routes);
 
 app.use(errorHandler);
 

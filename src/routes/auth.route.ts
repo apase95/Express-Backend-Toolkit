@@ -1,7 +1,6 @@
 import { Router } from "express";
 import passport from "passport";
 import { 
-    getMe, 
     googleCallback, 
     linkedinCallback, 
     login, 
@@ -9,9 +8,8 @@ import {
     refreshToken, 
     register 
 } from "../controllers/auth.controller.js";
-import { authenticate } from "../middlewares/auth.middleware.js";
 import { rateLimiter } from "../middlewares/rate-limit.middleware.js";
-import { config } from "../config/index.js";
+import { config } from "../config/index.config.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { loginSchema, registerSchema } from "../validations/auth.validation.js";
 
@@ -26,13 +24,10 @@ router.post("/login", validate(loginSchema), login);
 router.post("/logout", logout);
 router.post("/refresh-token", refreshToken);
 
-router.get("/me", authenticate, getMe);
-
 router.get("/google", passport.authenticate("google", { 
     scope: ["profile", "email"],
     session: false
 }));
-
 router.get("/google/callback", 
     passport.authenticate("google", {
         session: false, 
@@ -46,7 +41,6 @@ router.get("/linkedin", passport.authenticate("linkedin", {
     scope: ["r_emailaddress", "r_liteprofile"],
     session: false
 }));
-
 router.get("/linkedin/callback", 
     passport.authenticate("linkedin", {
         session: false, 

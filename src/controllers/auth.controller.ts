@@ -1,5 +1,5 @@
 import { Request, RequestHandler, Response } from "express";
-import { config } from "../config/index.js";
+import { config } from "../config/index.config.js";
 import { asyncHandler } from "../middlewares/async-handler.middleware.js";
 import { authService } from "../services/auth.service.js";
 import { ok, created, noContent } from "../http/response.js";
