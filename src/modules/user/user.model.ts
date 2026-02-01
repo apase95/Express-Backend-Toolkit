@@ -1,5 +1,5 @@
 import { Schema, model, InferSchemaType, HydratedDocument, Model, Types } from "mongoose";
-import { comparePassword, hashPassword } from '../security/hash.js';
+import { comparePassword, hashPassword } from '../../core/security/hash.js';
 
 
 export enum UserRole {

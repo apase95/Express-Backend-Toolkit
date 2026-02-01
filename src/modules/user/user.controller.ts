@@ -1,9 +1,9 @@
 import { Request, RequestHandler, Response } from "express";
-import { asyncHandler } from "../middlewares/async-handler.middleware.js";
-import { getPaginationParams, getPagingData } from "../http/pagination.js";
-import { created, ok } from "../http/response.js";
-import { userService } from "../services/user.service.js";
-import { AppError } from "../errors/AppError.js";
+import { asyncHandler } from "../../core/middlewares/async-handler.middleware.js";
+import { getPaginationParams, getPagingData } from "../../core/http/pagination.js";
+import { created, ok } from "../../core/http/response.js";
+import { userService } from "./user.service.js";
+import { AppError } from "../../core/errors/AppError.js";
 
 
 export const getMe: RequestHandler = asyncHandler(async(

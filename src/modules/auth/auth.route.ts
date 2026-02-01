@@ -7,11 +7,11 @@ import {
     logout, 
     refreshToken, 
     register 
-} from "../controllers/auth.controller.js";
-import { rateLimiter } from "../middlewares/rate-limit.middleware.js";
-import { config } from "../config/index.config.js";
-import { validate } from "../middlewares/validate.middleware.js";
-import { loginSchema, registerSchema } from "../validations/auth.validation.js";
+} from "./auth.controller.js";
+import { rateLimiter } from "../../core/middlewares/rate-limit.middleware.js";
+import { config } from "../../core/config/index.config.js";
+import { validate } from "../../core/middlewares/validate.middleware.js";
+import { loginSchema, registerSchema } from "./auth.validation.js";
 
 
 const router = Router();

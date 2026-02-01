@@ -4,7 +4,7 @@ import { AuthError } from "../errors/AuthError.js";
 import { verifyToken } from "../security/jwt.js";
 import { AppError } from "../errors/AppError.js";
 import mongoose from "mongoose";
-import User, { UserRole } from "../models/user.model.js";
+import User, { UserRole } from "../../modules/user/user.model.js";
 
 
 export const authenticate = asyncHandler(async(

@@ -6,11 +6,11 @@ import {
     changePassword,
     createUser, 
     getUsers 
-} from "../controllers/user.controller.js";
-import { rateLimiter } from "../middlewares/rate-limit.middleware.js";
-import { authenticate, authorize } from "../middlewares/auth.middleware.js";
-import { UserRole } from "../models/user.model.js";
-import { upload } from "../middlewares/upload.middleware.js";
+} from "./user.controller.js";
+import { rateLimiter } from "../../core/middlewares/rate-limit.middleware.js";
+import { authenticate, authorize } from "../../core/middlewares/auth.middleware.js";
+import { UserRole } from "./user.model.js";
+import { upload } from "../../core/middlewares/upload.middleware.js";
 
 
 const router = Router();

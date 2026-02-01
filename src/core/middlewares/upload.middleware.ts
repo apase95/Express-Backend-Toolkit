@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import multer from "multer";
 import { AppError } from "../errors/AppError.js";
-import { cloudinaryUploader } from "../storage/cloudinary.storage.js";
+import { cloudinaryUploader } from "../../storage/cloudinary.storage.js";
 
 
 const handleUpload = (uploadFn: RequestHandler) => {

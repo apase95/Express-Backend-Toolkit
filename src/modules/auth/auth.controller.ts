@@ -1,8 +1,8 @@
 import { Request, RequestHandler, Response } from "express";
-import { config } from "../config/index.config.js";
-import { asyncHandler } from "../middlewares/async-handler.middleware.js";
-import { authService } from "../services/auth.service.js";
-import { ok, created, noContent } from "../http/response.js";
+import { config } from "../../core/config/index.config.js";
+import { asyncHandler } from "../../core/middlewares/async-handler.middleware.js";
+import { authService } from "./auth.service.js";
+import { ok, created } from "../../core/http/response.js";
 
 
 const COOKIE_OPTIONS = {
@@ -80,7 +80,7 @@ export const googleCallback: RequestHandler = asyncHandler(async(
     }
 
     const user = req.user as any; 
-    const { signAccessToken, signRefreshToken } = await import("../security/jwt.js");
+    const { signAccessToken, signRefreshToken } = await import("../../core/security/jwt.js");
     
     const payload = { userId: user._id.toString(), role: user.role };
     const accessToken = signAccessToken(payload);
@@ -100,7 +100,7 @@ export const linkedinCallback: RequestHandler = asyncHandler(async(
     }
 
     const user = req.user as any; 
-    const { signAccessToken, signRefreshToken } = await import("../security/jwt.js");
+    const { signAccessToken, signRefreshToken } = await import("../../core/security/jwt.js");
     
     const payload = { userId: user._id.toString(), role: user.role };
     const accessToken = signAccessToken(payload);

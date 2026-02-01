@@ -1,5 +1,5 @@
-import User, { IUser, IUserCreateInput } from "../models/user.model.js";
-import { BaseRepository } from "./base.repository.js";
+import User, { IUser, IUserCreateInput } from "./user.model.js";
+import { BaseRepository } from "../../core/database/base.repository.js";
 
 
 class UserRepository extends BaseRepository<IUser>{

@@ -1,6 +1,6 @@
-import User, { IUserCreateInput } from "../models/user.model.js";
-import { AppError } from '../errors/AppError.js';
-import { userRepository } from "../repositories/user.repository.js";
+import User, { IUserCreateInput } from "./user.model.js";
+import { AppError } from '../../core/errors/AppError.js';
+import { userRepository } from "./user.repository.js";
 
 
 interface IUpdateProfileInput {

@@ -1,10 +1,10 @@
-import User, { IUser, UserRole, IUserCreateInput } from "../models/user.model.js";
+import User, { IUser, UserRole, IUserCreateInput } from "../user/user.model.js";
 import { Profile as GoogleProfile } from "passport-google-oauth20";
 import { Profile as LinkedInProfile } from "passport-linkedin-oauth2";
-import { nanoid } from "../utils/nanoid.js";
-import { AppError } from "../errors/AppError.js";
-import { signAccessToken, signRefreshToken, verifyToken } from "../security/jwt.js";
-import { authRepository } from "../repositories/auth.repository.js";
+import { nanoid } from "../../core/utils/nanoid.js";
+import { AppError } from "../../core/errors/AppError.js";
+import { signAccessToken, signRefreshToken, verifyToken } from "../../core/security/jwt.js";
+import { authRepository } from "./auth.repository.js";
 
 
 interface NormalizedProfile {
