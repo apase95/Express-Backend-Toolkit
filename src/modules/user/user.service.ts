@@ -1,4 +1,4 @@
-import User, { IUserCreateInput } from "./user.model.js";
+import { IUserCreateInput } from "./user.model.js";
 import { AppError } from '../../core/errors/AppError.js';
 import { userRepository } from "./user.repository.js";
 
