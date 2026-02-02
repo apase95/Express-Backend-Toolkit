@@ -1,6 +1,7 @@
 import { PaymentManager } from "./payment.manager.js";
 import { transactionRepository } from "./transaction.repository.js";
 import { PaymentProvider, PaymentStatus } from "../../core/constants/payment.constant.js";
+import { orderService } from "../order/order.service.js";
 
 
 interface CreatePaymentRequest {
@@ -38,14 +39,22 @@ class PaymentService {
 
     async handleVnpayReturn(query: any) {
         const vnpayService = PaymentManager.getService(PaymentProvider.VNPAY);
-        const result = await vnpayService.verifyReturnUrl(query);
-        const { orderId, isSuccess } = result;
-        const transaction = await transactionRepository.findByOrderId(orderId);
         
+        const result = await vnpayService.verifyReturnUrl(query);
+        const { orderId, isSuccess, transactionId } = result;
+        
+        const transaction = await transactionRepository.findByOrderId(orderId);
         if (transaction) {
             transaction.status = isSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
+            if (transactionId) transaction.providerTransactionId = transactionId;
             transaction.metadata = query;
             await transaction.save();
+        }
+
+        if (isSuccess) {
+            await orderService.updateOrderStatus(orderId, PaymentStatus.SUCCESS);
+        } else {
+            await orderService.updateOrderStatus(orderId, PaymentStatus.FAILED);
         }
 
         return result;

@@ -2,11 +2,10 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import appRouter from "./app.route.js"; 
 import { errorHandler } from "./core/errors/errorHandler.js";
 import { config } from "./core/config/index.config.js";
 import { connectDB } from "./core/database/mongo.js";
-import authRoute from "./modules/auth/auth.route.js";
-import userRoute from "./modules/user/user.route.js";
 
 
 dotenv.config();
@@ -26,8 +25,7 @@ app.get("/", (req: Request, res: Response) => {
     res.send("API is running...");
 });
 
-app.use("/api/v1/auth", authRoute);
-app.use("/api/v1/users", userRoute);
+app.use("/api/v1", appRouter);
 
 app.use(errorHandler);
 

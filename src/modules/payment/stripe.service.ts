@@ -1,17 +1,20 @@
 import Stripe from "stripe";
 import { env } from "../../core/config/env.js";
+import { paymentConfig } from "../../core/config/payment.config.js";
 import { CreatePaymentParams, IPaymentGateway } from "./interfaces/payment.interface.js";
 import { AppError } from "../../core/errors/AppError.js";
+
 
 export class StripeService implements IPaymentGateway {
     private stripe: Stripe;
 
     constructor() {
-        if (!env.STRIPE_SECRET_KEY) {
+        if (!paymentConfig.stripe.secretKey) {
             throw new Error("STRIPE_SECRET_KEY is not defined");
         }
-        this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-            apiVersion: "2026-01-28.clover",
+        this.stripe = new Stripe(paymentConfig.stripe.secretKey, {
+            apiVersion: paymentConfig.stripe.apiVersion as any,
+            typescript: true,
         });
     }
 
@@ -35,6 +38,7 @@ export class StripeService implements IPaymentGateway {
                 mode: "payment",
                 success_url: `${env.CLIENT_URL}/payment/success?orderId=${params.orderId}`,
                 cancel_url: `${env.CLIENT_URL}/payment/failed?orderId=${params.orderId}`,
+                client_reference_id: params.orderId, 
                 metadata: {
                     orderId: params.orderId,
                 },

@@ -40,7 +40,12 @@ export class VnpayService implements IPaymentGateway {
         return `${env.VNP_URL}?${qs.stringify(sortedParams, { encode: false })}`;
     };
 
-    async verifyReturnUrl(query: any): Promise<{ isSuccess: boolean; orderId: string; message?: string }> {
+    async verifyReturnUrl(query: any): Promise<{ 
+        isSuccess: boolean; 
+        orderId: string; 
+        message?: string;
+        transactionId?: string;
+    }> {
         let vnp_Params = query;
         const secureHash = vnp_Params["vnp_SecureHash"];
 
@@ -55,12 +60,13 @@ export class VnpayService implements IPaymentGateway {
 
         const orderId = vnp_Params["vnp_TxnRef"];
         const rspCode = vnp_Params["vnp_ResponseCode"];
+        const transactionId = vnp_Params["vnp_TransactionNo"];
 
         if (secureHash === signed) {
             if (rspCode === "00") {
-                return { isSuccess: true, orderId };
+                return { isSuccess: true, orderId, transactionId };
             } else {
-                return { isSuccess: false, orderId, message: "Payment failed or cancelled" };
+                return { isSuccess: false, orderId, message: "Payment failed", transactionId };
             }
         } else {
             return { isSuccess: false, orderId, message: "Invalid Signature" };
