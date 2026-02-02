@@ -1,5 +1,5 @@
 import User, { IUser, IUserCreateInput } from "../user/user.model.js";
-import { BaseRepository } from "../../core/database/base.repository.js";
+import { BaseRepository, Filter } from "../../core/database/base.repository.js";
 
 
 class AuthRepository extends BaseRepository<IUser>{
@@ -8,40 +8,27 @@ class AuthRepository extends BaseRepository<IUser>{
         super(User);
     };
 
-    findByEmail(email: string) {
-        return this.model.findOne({ email });
+    findByEmail(email: string): Promise<IUser | null> {
+        return this.findOne({ email } as Filter<IUser>);
     };
 
-    findByEmailWithPassword(email: string) {
+    findByEmailWithPassword(email: string): Promise<IUser | null> {
         return this.model
             .findOne({ email })
-            .select("+hashedPassword");
+            .select("+hashedPassword")
+            .exec();
     };
 
-    findById(id: string) {
-        return this.model.findById(id);
+    createUser(data: IUserCreateInput): Promise<IUser | null> {
+        return this.create(data as any);
     };
 
-    findByIdWithPassword(id: string) {
-        return this.model
-            .findOne({ id })
-            .select("+hashedPassword");
+    findByGoogleId(googleId: string): Promise<IUser | null> {
+        return this.findOne({ googleId } as Filter<IUser>);
     };
 
-    createUser(data: IUserCreateInput) {
-        return this.model.create(data);
-    };
-
-    findByGoogleId(googleId: string) {
-        return this.model.findOne({ googleId });
-    };
-
-    findByLinkedInId(linkedinId: string) {
-        return this.model.findOne({ linkedinId });
-    };
-
-    findByEmailOrProviderId(email: string) {
-        return this.model.findOne({ email });
+    findByLinkedInId(linkedinId: string): Promise<IUser | null> {
+        return this.findOne({ linkedinId } as Filter<IUser>);
     };
 };
 

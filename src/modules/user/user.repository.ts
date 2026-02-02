@@ -1,5 +1,5 @@
-import User, { IUser, IUserCreateInput } from "./user.model.js";
-import { BaseRepository } from "../../core/database/base.repository.js";
+import User, { IUser, IUserCreateInput }  from "./user.model.js";
+import { BaseRepository, Filter } from "../../core/database/base.repository.js";
 
 
 class UserRepository extends BaseRepository<IUser>{
@@ -8,31 +8,34 @@ class UserRepository extends BaseRepository<IUser>{
         super(User);
     };
 
-    findByEmail(email: string) {
-        return this.model.findOne({ email });
+    findByEmail(email: string): Promise<IUser | null> {
+        return this.findOne({ email } as Filter<IUser>);
     };
 
-    findWithPasswordByEmail(email: string) {
+    findWithPasswordByEmail(email: string): Promise<IUser | null> {
         return this.model
             .findOne({ email })
-            .select("+hashedPassword");
+            .select("+hashedPassword")
+            .exec();
     };
 
-    findByIdWithPassword(id: string) {
+    findByIdWithPassword(id: string): Promise<IUser | null> {
         return this.model
             .findById(id)
-            .select("+hashedPassword");
+            .select("+hashedPassword")
+            .exec();
     };
 
-    createUser(data: IUserCreateInput) {
-        return this.model.create(data);
+    createUser(data: IUserCreateInput): Promise<IUser | null> {
+        return this.create(data as any);
     };
 
-    getUsers(skip: number, limit: number) {
-        return Promise.all([
-            this.model.find().skip(skip).limit(limit),
-            this.model.countDocuments()
+    async getUsers(skip: number, limit: number) {
+        const [users, total] = await Promise.all([
+            this.model.find().skip(skip).limit(limit).sort({ createdAt: -1 }).exec(),
+            this.model.countDocuments().exec()
         ]);
+        return { users, total };
     };
 };
 

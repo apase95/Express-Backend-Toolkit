@@ -14,18 +14,17 @@ export const authenticate = asyncHandler(async(
 ) => {
     
     const authHeader = req.headers.authorization;
-    let token: string | undefined;
 
+    let token: string | undefined;
     if (authHeader && authHeader.startsWith("Bearer")){
         token = authHeader.split(" ")[1];
     }
-    
     if (!token) {
         throw new AuthError("You are not logged in! Please log in to get access.")
     }
 
     const decoded = verifyToken(token) as { userId: string, role: string };
-    const currentUser = await User.findById(decoded.userId).select("+role");
+    const currentUser = await User.findById(decoded.userId);
     if (!currentUser) {
         throw new AuthError("The user belonging to this token does no longer exist.")
     }
