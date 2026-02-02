@@ -1,5 +1,6 @@
 import Order, { IOrder, IOrderCreateInput } from "./order.model.js";
 import { BaseRepository, Filter } from "../../core/database/base.repository.js";
+import { PaymentStatus } from "../../core/constants/payment.constant.js";
 
 class OrderRepository extends BaseRepository<IOrder> {
     constructor() {
@@ -30,7 +31,7 @@ class OrderRepository extends BaseRepository<IOrder> {
 
     async updateStatus(
         orderId: string, 
-        status: string
+        status: PaymentStatus
     ): Promise<IOrder | null> {
         return this.updateById(orderId, { status });
     };

@@ -1,6 +1,7 @@
 import { IOrderCreateInput } from "./order.model.js";
 import { orderRepository } from "./order.repository.js";
 import { AppError } from "../../core/errors/AppError.js";
+import { PaymentStatus } from "../../core/constants/payment.constant.js";
 
 class OrderService {
     
@@ -23,8 +24,17 @@ class OrderService {
         return order;
     };
 
-    async updateOrderStatus(orderId: string, status: string) {
-        return await orderRepository.updateStatus(orderId, status);
+    async updateOrderStatus(orderId: string, newStatus: PaymentStatus) {
+        const order = await orderRepository.findById(orderId);
+        if (!order) throw new AppError("Order not found", 404);
+
+        if (order.status === PaymentStatus.SUCCESS || 
+            order.status === PaymentStatus.REFUNDED) {
+            if (order.status === newStatus) return order;            
+            throw new AppError("Order is already processed and cannot be modified", 400);
+        }
+
+        return await orderRepository.updateStatus(orderId, newStatus);
     };
 };
 
