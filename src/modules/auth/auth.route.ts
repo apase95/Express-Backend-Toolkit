@@ -1,12 +1,15 @@
 import { Router } from "express";
 import passport from "passport";
 import { 
+    forgotPassword,
     googleCallback, 
     linkedinCallback, 
     login, 
     logout, 
     refreshToken, 
-    register 
+    register, 
+    resetPassword, 
+    verifyEmail
 } from "./auth.controller.js";
 import { rateLimiter } from "../../core/middlewares/rate-limit.middleware.js";
 import { config } from "../../core/config/index.config.js";
@@ -23,6 +26,11 @@ router.post("/register", validate(registerSchema), register);
 router.post("/login", validate(loginSchema), login);
 router.post("/logout", logout);
 router.post("/refresh-token", refreshToken);
+
+router.post("/verify-email", verifyEmail);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
+
 
 router.get("/google", passport.authenticate("google", { 
     scope: ["profile", "email"],
