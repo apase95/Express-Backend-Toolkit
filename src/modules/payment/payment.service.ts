@@ -4,6 +4,8 @@ import { PaymentProvider, PaymentStatus } from "../../core/constants/payment.con
 import { orderService } from "../order/order.service.js";
 import { logger } from "../../core/logger/logger.js";
 import { AppError } from "../../core/errors/AppError.js";
+import { notificationService } from "../notification/notification.service.js";
+import { NotificationType } from "../../core/constants/notification.constant.js";
 
 
 interface CreatePaymentRequest {
@@ -65,6 +67,18 @@ class PaymentService {
 
         await transaction.save();
         await orderService.updateOrderStatus(orderId, PaymentStatus.SUCCESS);
+
+        const userId = transaction.userId?.toString();
+        if (userId) {
+            await notificationService.send({
+                userId: userId,
+                type: NotificationType.PAYMENT,
+                title: "Payment Successfully",
+                message: `Order #${orderId} has been successfully paid through ${transaction.provider}.`,
+                metadata: { orderId, providerTransactionId }
+            });
+        }
+        logger.info(`Payment Success Notification sent to user ${userId}`);
     };
 
     async handlePaymentFailed(orderId: string, providerTransactionId?: string, reason?: string) {
@@ -80,6 +94,17 @@ class PaymentService {
         
         await transaction.save();
         await orderService.updateOrderStatus(orderId, PaymentStatus.FAILED);
+
+        const userId = transaction.userId?.toString();
+        if (userId) {
+            await notificationService.send({
+                userId: userId,
+                type: NotificationType.PAYMENT,
+                title: "Payment Failed",
+                message: `Payment for order #${orderId} failed. Reason: ${reason || 'Unknown'}`,
+                metadata: { orderId }
+            });
+        }
     };
 
     async handleVnpayIpn(query: any, verifyResult: any) {
