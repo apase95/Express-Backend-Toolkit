@@ -50,6 +50,10 @@ const userSchema = new Schema({
         index: true,
         default: null
     },
+    isEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
     role: {
         type: String,
         enum: Object.values(UserRole),
@@ -89,6 +93,7 @@ export interface IUserCreateInput {
     avatarURL?: string;
     googleId?: string;
     linkedinId?: string;
+    isEmailVerified?: Boolean,
     role?: UserRole;
 }
 
