@@ -3,6 +3,7 @@ import { config } from "../../core/config/index.config.js";
 import { asyncHandler } from "../../core/middlewares/async-handler.middleware.js";
 import { authService } from "./auth.service.js";
 import { ok, created } from "../../core/http/response.js";
+import { AppError } from "../../core/errors/AppError.js";
 
 
 const COOKIE_OPTIONS = {
@@ -108,4 +109,31 @@ export const linkedinCallback: RequestHandler = asyncHandler(async(
 
     res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS);
     res.redirect(`${config.app.clientUrl}/oauth-success?token=${accessToken}`);
+});
+
+
+export const verifyEmail: RequestHandler = asyncHandler(async (req, res) => {
+    const { token } = req.body;
+    if (!token) throw new AppError("Token is required", 400);
+    
+    const result = await authService.verifyEmail(token);
+    return ok(res, result);
+});
+
+
+export const forgotPassword: RequestHandler = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) throw new AppError("Email is required", 400);
+
+    await authService.forgotPassword(email);
+    return ok(res, null, "If your email exists, a reset link has been sent.");
+});
+
+
+export const resetPassword: RequestHandler = asyncHandler(async (req, res) => {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) throw new AppError("Token and new password are required", 400);
+
+    const result = await authService.resetPassword(token, newPassword);
+    return ok(res, result);
 });

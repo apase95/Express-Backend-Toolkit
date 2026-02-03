@@ -5,6 +5,9 @@ import { nanoid } from "../../core/utils/nanoid.js";
 import { AppError } from "../../core/errors/AppError.js";
 import { signAccessToken, signRefreshToken, verifyToken } from "../../core/security/jwt.js";
 import { authRepository } from "./auth.repository.js";
+import { config } from "../../core/config/index.config.js"; 
+import { userRepository } from "../user/user.repository.js";
+import { emailService } from "../../core/mail/mail.service.js";
 
 
 interface NormalizedProfile {
@@ -53,6 +56,8 @@ class AuthService {
         if (existingUser) throw new AppError("Email already exists", 409);
 
         const newUser = await User.create(data as any);
+        await this.sendVerificationEmail(newUser);
+        
         return newUser;
     };
 
@@ -121,6 +126,69 @@ class AuthService {
         };
 
         return this.handleOAuthUser(normalizedData, "linkedin");
+    };
+
+    async sendVerificationEmail(user: IUser){
+        const token = nanoid(32);
+        await authRepository.createVerificationToken(user._id.toString(), token);
+        
+        const verifyLink = `${config.app.clientUrl}/verify-email?token=${token}`;
+        await emailService.sendEmail(
+            user.email,
+            "Verify your email",
+            `<p>Click <a href="${verifyLink}">here</a> to verify your email.</p>`
+        );
+    };
+
+    async verifyEmail(token: string){
+        const record = await authRepository.findVerificationToken(token);
+        if (!record) throw new AppError("User not found", 404);
+
+        const user = await userRepository.findById(record.userId.toString());
+        if (!user) throw new AppError("User not found", 404);
+        if (user.isEmailVerified) throw new AppError("Email already verified", 400);
+
+        user.isEmailVerified = true;
+        await user.save();
+        await authRepository.deleteVerificationToken(record._id.toString());
+        return { message: "Email verified successfully" };
+    };
+
+    async forgotPassword(email: string){
+        const user = await userRepository.findByEmail(email);
+        if (!user) return;
+        if (user.googleId || user.linkedinId) throw new AppError("Social cannot reset password", 400);
+
+        await authRepository.deleteExistingResetToken(user._id.toString());
+    
+        const token = nanoid(32);
+        await authRepository.createPasswordResetToken(user._id.toString(), token);
+        
+        const resetLink = `${config.app.clientUrl}/reset-password?token=${token}`;
+        await emailService.sendEmail(
+            user.email,
+            "Reset your password",
+            `<p>Click <a href="${resetLink}">here</a> to reset your password. Link expires in 1 hour.</p>`
+        );
+    };
+
+    async resetPassword(token: string, newPassword: string){
+        const record = await authRepository.findPasswordResetToken(token);
+        if (!record) throw new AppError("Invalid or expired reset token", 400);
+
+        const user = await userRepository.findByIdWithPassword(record.userId.toString());
+        if (!user) throw new AppError("User not found", 404);
+
+        user.password = newPassword;
+        await user.save();
+
+        await authRepository.deletePasswordResetToken(record._id.toString());
+        await emailService.sendEmail(
+            user.email,
+            "Password Reset Success", "<p>Your password has been changed.</p>"
+        );
+
+        return { message: "Password reset successfully" };
     };
 }
 
