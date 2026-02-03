@@ -37,26 +37,56 @@ class PaymentService {
         return paymentUrl;
     };
 
-    async handleVnpayReturn(query: any) {
-        const vnpayService = PaymentManager.getService(PaymentProvider.VNPAY);
-        
-        const result = await vnpayService.verifyReturnUrl(query);
-        const { orderId, isSuccess, transactionId } = result;
-        
+    async confirmPaymentSuccess(orderId: string, providerTransactionId?: string) {
         const transaction = await transactionRepository.findByOrderId(orderId);
+        
         if (transaction) {
-            transaction.status = isSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
-            if (transactionId) transaction.providerTransactionId = transactionId;
-            transaction.metadata = query;
+            if (transaction.status === PaymentStatus.SUCCESS) return;
+
+            transaction.status = PaymentStatus.SUCCESS;
+            if (providerTransactionId) {
+                transaction.providerTransactionId = providerTransactionId;
+            }
             await transaction.save();
         }
 
-        if (isSuccess) {
-            await orderService.updateOrderStatus(orderId, PaymentStatus.SUCCESS);
-        } else {
-            await orderService.updateOrderStatus(orderId, PaymentStatus.FAILED);
+        await orderService.updateOrderStatus(orderId, PaymentStatus.SUCCESS);
+    };
+
+    async handleVnpayIpn(query: any, verifyResult: any) {
+        const { orderId, isSuccess, transactionId } = verifyResult;
+
+        const transaction = await transactionRepository.findByOrderId(orderId);
+        if (!transaction) {
+            return { RspCode: "01", Message: "Order not found" };
         }
 
+        if (transaction.status === PaymentStatus.SUCCESS && isSuccess) {
+            return { RspCode: "02", Message: "Order already confirmed" };
+        }
+
+        transaction.metadata = query;
+        if (transactionId) transaction.providerTransactionId = transactionId;
+        
+        if (isSuccess) {
+            transaction.status = PaymentStatus.SUCCESS;
+            await orderService.updateOrderStatus(orderId, PaymentStatus.SUCCESS);
+        } else {
+            transaction.status = PaymentStatus.FAILED;
+        }
+
+        await transaction.save();
+        return { RspCode: "00", Message: "Confirm Success" };
+    };
+
+    async handleVnpayReturn(query: any) {
+        const vnpayService = PaymentManager.getService(PaymentProvider.VNPAY);
+        const result = await vnpayService.verifyReturnUrl(query);
+        
+        if (result.isSuccess) {
+            await this.confirmPaymentSuccess(result.orderId, result.transactionId);
+        }
+        
         return result;
     };
 }
