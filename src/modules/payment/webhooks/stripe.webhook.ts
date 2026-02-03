@@ -11,7 +11,6 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
 
 export const stripeWebhook = async (req: Request, res: Response) => {
     const sig = req.headers["stripe-signature"];
-
     let event: Stripe.Event;
 
     try {
@@ -25,19 +24,30 @@ export const stripeWebhook = async (req: Request, res: Response) => {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    if (event.type === "checkout.session.completed") {
-        const session = event.data.object as Stripe.Checkout.Session;
-        
-        const orderId = session.client_reference_id || session.metadata?.orderId;
-        const transactionId = session.payment_intent as string;
+    const session = event.data.object as Stripe.Checkout.Session;
+    const orderId = session.client_reference_id || session.metadata?.orderId;
+    const transactionId = session.payment_intent as string || session.id; 
 
-        if (orderId) {
-            try {
-                await paymentService.confirmPaymentSuccess(orderId, transactionId);
-                logger.info(`Stripe Payment Success: Order ${orderId}`);
-            } catch (error) {
-                logger.error(`Stripe Update Order Failed: ${error}`);
+    if (orderId) {
+        try {
+            switch (event.type) {
+                case "checkout.session.completed":
+                    await paymentService.confirmPaymentSuccess(orderId, transactionId, session);
+                    logger.info(`Stripe Success: Order ${orderId}`);
+                    break;
+
+                case "checkout.session.expired":
+                case "checkout.session.async_payment_failed":
+                case "payment_intent.payment_failed":
+                    await paymentService.handlePaymentFailed(orderId, transactionId, event.type);
+                    logger.info(`Stripe Failed/Expired: Order ${orderId}`);
+                    break;
+        
+                default:
+                    break;
             }
+        } catch (error) {
+            logger.error(`Stripe Handler Failed: ${error}`);
         }
     }
 
