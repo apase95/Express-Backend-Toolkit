@@ -41,5 +41,11 @@ export const config = {
         port: env.SMTP_PORT,
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
-    }
+    },
+    redis: {
+        host: env.REDIS_HOST,
+        port: env.REDIS_PORT,
+        password: env.REDIS_PASSWORD,
+        prefix: env.REDIS_PREFIX,
+    },
 } as const;

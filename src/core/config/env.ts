@@ -42,6 +42,11 @@ const envSchema = z.object({
     VNP_HASH_SECRET: z.string().optional(),
     VNP_URL: z.string().default("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"),
     VNP_RETURN_URL: z.string().default("http://localhost:5000/api/v1/payments/vnpay-return"),
+
+    REDIS_HOST: z.string().default("localhost"),
+    REDIS_PORT: z.coerce.number().default(6379),
+    REDIS_PASSWORD: z.string().optional(),
+    REDIS_PREFIX: z.string().default("express-toolkit:"), 
 });
 
 try {
