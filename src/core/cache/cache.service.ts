@@ -79,6 +79,14 @@ class CacheService {
             logger.error(`Cache Clear Pattern Error: ${error}`);
         }
     };
+
+    async ping(): Promise<string> {
+        try {
+            return await this.redis.ping();
+        } catch (error) {
+            return "FAILED";
+        }
+    };
 }
 
 export const cacheService = new CacheService();
