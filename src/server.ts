@@ -1,6 +1,5 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import cors from "cors";
 import cookieParser from "cookie-parser";
 import appRouter from "./app.route.js"; 
 import { errorHandler } from "./core/errors/errorHandler.js";

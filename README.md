@@ -86,7 +86,7 @@ src
 | Core | Node.js, Express 5, TypeScript |
 | Database | MongoDB, Redis |
 | Auth | JWT, Passport, Bcrypt |
-| Validation | Zod (Schema & Env Validation |
+| Validation | Zod (Schema & Env Validation) |
 | Security | Helmet, HPP, Cors, Express-Rate-Limit |
 | Payments | Stripe SDK, VNPay Integration |
 | Uploads | Multer, Cloudinary |
