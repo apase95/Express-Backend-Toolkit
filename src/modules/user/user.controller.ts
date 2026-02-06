@@ -10,7 +10,6 @@ export const getMe: RequestHandler = asyncHandler(async(
     req: Request,
     res: Response
 ) => {
-    
     return ok(res, req.user);
 });
 
@@ -19,7 +18,6 @@ export const updateUserProfile: RequestHandler = asyncHandler(async(
     req: Request,
     res: Response
 ) => {
-    
     const userId = req.user!._id.toString();
     const body = req.body;
     if (req.file) {
@@ -35,7 +33,6 @@ export const changePhone: RequestHandler = asyncHandler(async(
     req: Request,
     res: Response
 ) => {
-
     const userId = req.user!._id.toString();
     
     const { phoneNumber } = req.body;
@@ -50,7 +47,6 @@ export const changePassword: RequestHandler = asyncHandler(async(
     req: Request,
     res: Response
 ) => {
-
     const userId = req.user!._id.toString();
     
     const { oldPassword, newPassword } = req.body;
@@ -67,16 +63,15 @@ export const createUser: RequestHandler = asyncHandler(async (
     req: Request, 
     res: Response
 ) => {
-    
     const newUser = await userService.createUser(req.body);
     return created(res, newUser, "User registered successfully");
 });
+
 
 export const getUsers: RequestHandler = asyncHandler(async(
     req: Request, 
     res: Response
 ) => {
-  
     const { page, limit } = getPaginationParams(req.query);
     const { keyword, role } = req.query;
 
@@ -91,6 +86,7 @@ export const getUsers: RequestHandler = asyncHandler(async(
     return ok(res, responseData);
 });
 
+
 export const getUserById: RequestHandler = asyncHandler(async(
     req: Request, 
     res: Response
@@ -98,5 +94,50 @@ export const getUserById: RequestHandler = asyncHandler(async(
     const { id } = req.params;
     const user = await userService.getUserById(id as string);
     return ok(res, user);
+});
+
+
+export const deleteUser: RequestHandler = asyncHandler(async(
+    req: Request, 
+    res: Response
+) => {
+    const adminId = req.user!._id.toString();
+    const { id } = req.params;
+    const result = await userService.deleteUser(adminId, id as string);
+    return ok(res, result);
+});
+
+
+export const toggleUserLock: RequestHandler = asyncHandler(async(
+    req: Request, 
+    res: Response
+) => {
+    const adminId = req.user!._id.toString();
+    const { id } = req.params;
+    const result = await userService.toggleUserLock(adminId, id as string);
+    return ok(res, result);
+});
+
+
+export const changeUserRole: RequestHandler = asyncHandler(async(
+    req: Request, 
+    res: Response
+) => {
+    const adminId = req.user!._id.toString();
+    const { id } = req.params;
+    const { role } = req.body;
+    const result = await userService.changeUserRole(adminId, id as string, role);
+    return ok(res, result);
+});
+
+
+export const adminResetPassword: RequestHandler = asyncHandler(async(
+    req: Request, 
+    res: Response
+) => {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+    const result = await userService.adminResetPassword(id as string, newPassword);
+    return ok(res, result);
 });
 

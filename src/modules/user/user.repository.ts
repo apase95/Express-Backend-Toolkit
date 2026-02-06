@@ -36,15 +36,17 @@ class UserRepository extends BaseRepository<IUser>{
         limit: number,
         sort: Record<string, any> = { createdAt: -1 },
     ) {
+        const queryFilter = { isDeleted: false, ...filter };
         const [users, total] = await Promise.all([
             this.model
-                .find(filter as any)
+                .find(queryFilter as any)
                 .sort(sort)
                 .skip(skip)
                 .limit(limit)
                 .select("-hashedPassword")
                 .exec(),
-            this.model.countDocuments(filter as any).exec()
+
+            this.model.countDocuments(queryFilter as any).exec()
         ]);
         return { users, total };
     };

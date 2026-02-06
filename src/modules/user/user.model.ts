@@ -1,4 +1,4 @@
-import { Schema, model, InferSchemaType, HydratedDocument, Model, Types } from "mongoose";
+import { Schema, model, InferSchemaType, HydratedDocument, Model, Types, Document } from "mongoose";
 import { comparePassword, hashPassword } from '../../core/security/hash.js';
 
 
@@ -54,6 +54,15 @@ const userSchema = new Schema({
         type: Boolean,
         default: false,
     },
+    isLocked: {
+        type: Boolean,
+        default: false
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        select: false
+    },
     role: {
         type: String,
         enum: Object.values(UserRole),
@@ -93,7 +102,9 @@ export interface IUserCreateInput {
     avatarURL?: string;
     googleId?: string;
     linkedinId?: string;
-    isEmailVerified?: Boolean,
+    isEmailVerified?: Boolean;
+    isLocked?: boolean;
+    isDeleted?: boolean;
     role?: UserRole;
 }
 

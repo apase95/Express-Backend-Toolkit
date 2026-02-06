@@ -6,7 +6,11 @@ import {
     changePassword,
     createUser, 
     getUsers, 
-    getUserById
+    getUserById,
+    deleteUser,
+    toggleUserLock,
+    changeUserRole,
+    adminResetPassword
 } from "./user.controller.js";
 import { rateLimiter } from "../../core/middlewares/rate-limit.middleware.js";
 import { authenticate, authorize } from "../../core/middlewares/auth.middleware.js";
@@ -29,6 +33,10 @@ router.use(authenticate, authorize(UserRole.ADMIN));
 router.get('/', getUsers);
 router.post('/', createUser);
 router.get('/:id', getUserById);
+router.delete('/:id', deleteUser);
+router.patch('/:id/lock', toggleUserLock);
+router.patch('/:id/role', changeUserRole);
+router.patch('/:id/reset-password', adminResetPassword);
 
 
 export default router;

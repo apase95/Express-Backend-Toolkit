@@ -1,4 +1,4 @@
-import { IUserCreateInput } from "./user.model.js";
+import { IUserCreateInput, UserRole } from "./user.model.js";
 import { AppError } from '../../core/errors/AppError.js';
 import { userRepository } from "./user.repository.js";
 
@@ -88,7 +88,68 @@ class UserService {
         await user.save();
         
         return { message: "Password changed successfully" };
-    }
+    };
+
+    async deleteUser(adminId: string, targetUserId: string) {
+        if (adminId === targetUserId) throw new AppError("You cannot delete yourself", 400);
+
+        const user = await userRepository.findById(targetUserId);
+        if (!user || user.isDeleted) throw new AppError("User not found", 404);
+
+        user.isDeleted = true;
+        await user.save();
+
+        return { message: "User delete successfully" };
+    };
+
+    async toggleUserLock(adminId: string, targetUserId: string) {
+        if (adminId === targetUserId) throw new AppError("You cannot lock yourself", 400);
+
+        const user = await userRepository.findById(targetUserId);
+        if (!user || user.isDeleted) throw new AppError("User not found", 404);
+
+        user.isLocked = !user.isLocked;
+        await user.save();
+
+        return { 
+            message: user.isLocked ? "User locked" : "User unlocked", 
+            isLocked: user.isLocked 
+        };
+    };
+
+    async changeUserRole(
+        adminId: string, 
+        targetUserId: string, 
+        newRole: UserRole
+    ) {
+        if (adminId === targetUserId) throw new AppError("You cannot change your own role", 400);
+        
+        if (!Object.values(UserRole).includes(newRole)) {
+            throw new AppError("Invalid role", 400);
+        }
+
+        const user = await userRepository.findById(targetUserId);
+        if (!user || user.isDeleted) throw new AppError("User not found", 404);
+
+        user.role = newRole;
+        await user.save();
+
+        return { message: `User role updated to ${newRole}` };
+    };
+
+    async adminResetPassword(targetUserId: string, newPassword: string) {
+        const user = await userRepository.findById(targetUserId);
+        if (!user || user.isDeleted) throw new AppError("User not found", 404);
+
+        if (!newPassword || newPassword.length < 8) {
+            throw new AppError("Password must be at least 8 characters", 400);
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        return { message: "Password reset successfully by Admin" };
+    };
 }
 
 export const userService = new UserService();

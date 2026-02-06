@@ -28,8 +28,11 @@ class AuthService {
         ip?: string
     ){
         const { email, password } = data;
-        const user = await authRepository.findByEmailWithPassword(email);
+        const user = await User.findOne({ email }).select("+hashedPassword +isLocked +isDeleted");
         if (!user || !password) throw new AppError("Invalid email or password", 401);
+
+        if (user.isDeleted) throw new AppError("Account has been deleted", 403);
+        if (user.isLocked) throw new AppError("Account has been locked", 403);
 
         const isValid = await user.checkPassword(password);
         if (!isValid) throw new AppError("Invalid email or password", 401);
