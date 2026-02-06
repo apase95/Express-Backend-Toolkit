@@ -8,6 +8,7 @@ import { authRepository } from "./auth.repository.js";
 import { config } from "../../core/config/index.config.js"; 
 import { userRepository } from "../user/user.repository.js";
 import { emailService } from "../../core/mail/mail.service.js";
+import { sessionService } from "../session/session.service.js";
 
 
 interface NormalizedProfile {
@@ -21,7 +22,11 @@ interface NormalizedProfile {
 
 class AuthService {
 
-    async login(data: Pick<IUserCreateInput, "email" | "password">){
+    async login(
+        data: Pick<IUserCreateInput, "email" | "password">,
+        userAgent?: string,
+        ip?: string
+    ){
         const { email, password } = data;
         const user = await authRepository.findByEmailWithPassword(email);
         if (!user || !password) throw new AppError("Invalid email or password", 401);
@@ -29,7 +34,12 @@ class AuthService {
         const isValid = await user.checkPassword(password);
         if (!isValid) throw new AppError("Invalid email or password", 401);
 
-        const tokens = await this.generateTokens(user);
+        const tokens = await sessionService.createSession(
+            user._id.toString(), 
+            user.role,
+            userAgent,
+            ip
+        );
         return { user, ...tokens };
     };
 
@@ -39,7 +49,7 @@ class AuthService {
         const user = await authRepository.findById(decoded.userId);
         if (!user) throw new AppError("User not found", 404);
 
-        return await this.generateTokens(user); 
+        return await sessionService.refreshSession(token);
     };
 
     async generateTokens(user: IUser) {

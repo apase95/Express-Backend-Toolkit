@@ -4,6 +4,7 @@ import { asyncHandler } from "../../core/middlewares/async-handler.middleware.js
 import { authService } from "./auth.service.js";
 import { ok, created } from "../../core/http/response.js";
 import { AppError } from "../../core/errors/AppError.js";
+import { sessionService } from "../session/session.service.js";
 
 
 const COOKIE_OPTIONS = {
@@ -34,18 +35,18 @@ export const login: RequestHandler = asyncHandler(async(
 });
 
 
-export const logout: RequestHandler = ( 
+export const logout: RequestHandler = asyncHandler(async(
     req: Request,
     res: Response
 ) => {
-    res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: config.app.env === "production",
-        sameSite: "strict",
-    });
+    const refreshToken = req.cookies?.refreshToken;
+    if (refreshToken) {
+        await sessionService.logout(refreshToken);
+    }
 
+    res.clearCookie("refreshToken", { ...COOKIE_OPTIONS, maxAge: 0 });
     return ok(res, null, "Logged out successfully");
-};
+});
 
 
 export const refreshToken: RequestHandler = asyncHandler(async(
