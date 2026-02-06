@@ -5,7 +5,8 @@ import {
     changePhone,
     changePassword,
     createUser, 
-    getUsers 
+    getUsers, 
+    getUserById
 } from "./user.controller.js";
 import { rateLimiter } from "../../core/middlewares/rate-limit.middleware.js";
 import { authenticate, authorize } from "../../core/middlewares/auth.middleware.js";
@@ -16,13 +17,18 @@ import { upload } from "../../core/middlewares/upload.middleware.js";
 const router = Router();
 router.use(rateLimiter({ windowMs: 15 * 60 * 1000, max: 100 }));
 
+
 router.get('/me', authenticate, getMe);
 router.put('/me', authenticate, updateUserProfile);
 router.put('/me/avatar', authenticate, upload.single('avatar'), updateUserProfile);
 router.patch('/me/phone', authenticate, changePhone);
 router.put('/me/password', authenticate, changePassword);
 
-router.get('/', authenticate, authorize(UserRole.ADMIN), getUsers);
-router.post('/', authenticate, authorize(UserRole.ADMIN), createUser); 
+
+router.use(authenticate, authorize(UserRole.ADMIN));
+router.get('/', getUsers);
+router.post('/', createUser);
+router.get('/:id', getUserById);
+
 
 export default router;

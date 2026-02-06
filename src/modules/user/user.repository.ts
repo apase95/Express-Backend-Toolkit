@@ -30,10 +30,21 @@ class UserRepository extends BaseRepository<IUser>{
         return this.create(data as any);
     };
 
-    async getUsers(skip: number, limit: number) {
+    async findAllUsers(
+        filter: Filter<IUser>,
+        skip: number, 
+        limit: number,
+        sort: Record<string, any> = { createdAt: -1 },
+    ) {
         const [users, total] = await Promise.all([
-            this.model.find().skip(skip).limit(limit).sort({ createdAt: -1 }).exec(),
-            this.model.countDocuments().exec()
+            this.model
+                .find(filter as any)
+                .sort(sort)
+                .skip(skip)
+                .limit(limit)
+                .select("-hashedPassword")
+                .exec(),
+            this.model.countDocuments(filter as any).exec()
         ]);
         return { users, total };
     };

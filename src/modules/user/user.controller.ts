@@ -63,19 +63,6 @@ export const changePassword: RequestHandler = asyncHandler(async(
 });
 
 
-export const getUsers: RequestHandler = asyncHandler(async(
-    req: Request, 
-    res: Response
-) => {
-  
-    const { page, limit, skip } = getPaginationParams(req.query);
-    const { users, total } = await userService.getUsers(skip, limit);
-
-    const responseData = getPagingData(users, total, page, limit);
-    return ok(res, responseData);
-});
-
-
 export const createUser: RequestHandler = asyncHandler(async (
     req: Request, 
     res: Response
@@ -83,5 +70,33 @@ export const createUser: RequestHandler = asyncHandler(async (
     
     const newUser = await userService.createUser(req.body);
     return created(res, newUser, "User registered successfully");
+});
+
+export const getUsers: RequestHandler = asyncHandler(async(
+    req: Request, 
+    res: Response
+) => {
+  
+    const { page, limit } = getPaginationParams(req.query);
+    const { keyword, role } = req.query;
+
+    const { users, total } = await userService.getAllUsers({ 
+        page, 
+        limit, 
+        keyword: keyword as string, 
+        role: role as string 
+    });
+
+    const responseData = getPagingData(users, total, page, limit);
+    return ok(res, responseData);
+});
+
+export const getUserById: RequestHandler = asyncHandler(async(
+    req: Request, 
+    res: Response
+) => {
+    const { id } = req.params;
+    const user = await userService.getUserById(id as string);
+    return ok(res, user);
 });
 

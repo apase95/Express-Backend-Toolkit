@@ -15,10 +15,36 @@ interface IChangePasswordInput {
     newPassword: string;
 }
 
+interface GetUsersQuery {
+    page?: number;
+    limit?: number;
+    keyword?: string;
+    role?: string;
+}
+
 class UserService {
-    async getUsers(skip: number, limit: number) {
-        const [users, total] = await userRepository.getUsers(skip, limit);
-        return { users, total };
+    async getAllUsers(query: GetUsersQuery) {
+        const page = Number(query.page) || 1;
+        const limit = Number(query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const filter: any = {};
+        if (query.keyword) {
+            const regex = new RegExp(query.keyword, 'i');
+            filter.$or = [
+                { displayName: regex },
+                { email: regex },
+            ];
+        }
+        if (query.role) filter.role = query.role;
+
+        return await userRepository.findAllUsers(filter, skip, limit);
+    };
+
+    async getUserById(userId: string) {
+        const user = await userRepository.findById(userId);
+        if (!user) throw new AppError("User not found", 404);
+        return user;
     };
 
     async createUser(data: IUserCreateInput) {
